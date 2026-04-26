@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteNote } from "@/lib/api";
 import { Note } from "@/types/note";
 import Link from "next/link";
-import css from "./NoteList.module.css"; // Переконайся, що шлях правильний
+import css from "./NoteList.module.css";
 
 interface NoteListProps {
   notes: Note[];
@@ -12,9 +12,6 @@ interface NoteListProps {
 
 export default function NoteList({ notes }: NoteListProps) {
   const queryClient = useQueryClient();
-
-  // Додай цей рядок для перевірки в консолі браузера
-  console.log("CSS Modules object:", css);
 
   const mutation = useMutation({
     mutationFn: (id: string) => deleteNote(id),
@@ -30,11 +27,16 @@ export default function NoteList({ notes }: NoteListProps) {
           <Link href={`/notes/${note.id}`} className={css.noteLink}>
             <h3 className={css.noteTitle}>{note.title}</h3>
             <p className={css.noteContent}>{note.content}</p>
-            <span className={css.noteTag}>Tag: {note.tag}</span>
+            <span className={css.noteTag}>
+              Tag: {note.category || note.tag}
+            </span>
           </Link>
           <button
             className={css.deleteBtn}
-            onClick={() => mutation.mutate(note.id)}
+            onClick={(e) => {
+              e.preventDefault(); // Щоб не спрацював Link
+              mutation.mutate(note.id);
+            }}
             disabled={mutation.isPending}
           >
             {mutation.isPending ? "..." : "Delete"}

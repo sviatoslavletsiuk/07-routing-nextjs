@@ -4,13 +4,19 @@ export interface Note {
   id: string;
   title: string;
   content: string;
-  tag: NoteTag;
+  tag?: NoteTag;
   createdAt: string;
   updatedAt: string;
+  category: string;
 }
 
 export interface CreateNoteDto {
   title: string;
   content: string;
   tag: NoteTag;
+}
+
+export interface NotesResponse {
+  items: Note[];
+  total: number;
 }
