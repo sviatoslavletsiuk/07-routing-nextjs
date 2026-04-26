@@ -1,58 +1,54 @@
-import { NotesResponse, Note } from "@/types/note";
+import axios from "axios";
+import { Note, CreateNoteDto, NotesResponse } from "@/types/note";
 
-// Ці дані будуть доступні завжди, поки запущено проект
-const MOCK_NOTES: Note[] = [
-  {
-    id: "1",
-    title: "Перша нотатка",
-    content: "Текст вашої першої нотатки",
-    category: "Work",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+const api = axios.create({
+  baseURL: "https://69e60c73ce4e908a155edec4.mockapi.io/api/v1",
+  headers: {
+    "Content-Type": "application/json",
+    "x-api-key": process.env.NEXT_PUBLIC_NOTEHUB_TOKEN,
   },
-  {
-    id: "2",
-    title: "Покупки",
-    content: "Купити молоко та хліб",
-    category: "Personal",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
+});
 
 export const fetchNotes = async (
-  category: string = "",
+  search: string = "",
+  page: number = 1,
+  perPage: number = 6,
+  category: string = "all",
 ): Promise<NotesResponse> => {
-  await new Promise((resolve) => setTimeout(resolve, 100));
-
-  const isAll = !category || category.toLowerCase() === "all";
-  const filtered = isAll
-    ? MOCK_NOTES
-    : MOCK_NOTES.filter(
-        (n) => n.category.toLowerCase() === category.toLowerCase(),
-      );
-
-  return { items: filtered, total: filtered.length };
-};
-
-export const fetchNoteById = async (id: string): Promise<Note | undefined> => {
-  return MOCK_NOTES.find((n) => n.id === id);
-};
-
-export const createNote = async (noteData: Partial<Note>): Promise<Note> => {
-  const newNote: Note = {
-    id: Math.random().toString(36).substring(2, 9),
-    title: noteData.title || "Untitled",
-    content: noteData.content || "",
-    category: noteData.category || "Work",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+  // Використовуємо тип Record замість any для ESLint
+  const params: Record<string, string | number | undefined> = {
+    page,
+    limit: perPage,
+    search: search || undefined,
   };
-  MOCK_NOTES.push(newNote);
-  return newNote;
+
+  if (category && category !== "all") params.category = category;
+
+  const { data, headers } = await api.get<Note[]>("/notes", { params });
+
+  // Розрахунок сторінок
+  const totalCount = parseInt(headers["x-total-count"] || "50", 10);
+  const totalPages = Math.ceil(totalCount / perPage) || 1;
+
+  return {
+    notes: data, // Для Notes.client.tsx
+    items: data, // Для FilteredNotesPage та інших
+    totalPages: totalPages,
+    total: totalCount,
+  };
 };
 
+export const fetchNoteById = async (id: string): Promise<Note> => {
+  const { data } = await api.get<Note>(`/notes/${id}`);
+  return data;
+};
+
+// Цей експорт виправить помилку в NoteList.tsx (скріншот 2CA6)
 export const deleteNote = async (id: string): Promise<void> => {
-  const index = MOCK_NOTES.findIndex((n) => n.id === id);
-  if (index !== -1) MOCK_NOTES.splice(index, 1);
+  await api.delete(`/notes/${id}`);
+};
+
+export const createNote = async (note: CreateNoteDto): Promise<Note> => {
+  const { data } = await api.post<Note>("/notes", note);
+  return data;
 };

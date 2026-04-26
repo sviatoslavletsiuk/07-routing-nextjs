@@ -28,13 +28,13 @@ export default function NoteList({ notes }: NoteListProps) {
             <h3 className={css.noteTitle}>{note.title}</h3>
             <p className={css.noteContent}>{note.content}</p>
             <span className={css.noteTag}>
-              Tag: {note.category || note.tag}
+              Tag: {note.category || note.tag || "General"}
             </span>
           </Link>
           <button
             className={css.deleteBtn}
             onClick={(e) => {
-              e.preventDefault(); // Щоб не спрацював Link
+              e.preventDefault();
               mutation.mutate(note.id);
             }}
             disabled={mutation.isPending}

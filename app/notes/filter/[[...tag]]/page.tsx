@@ -7,36 +7,35 @@ import { useParams } from "next/navigation";
 
 export default function FilteredNotesPage() {
   const params = useParams();
-  const currentTag = Array.isArray(params?.tag) ? params.tag[0] : "all";
+  const tagParam = params?.tag;
+  const category = (Array.isArray(tagParam) ? tagParam[0] : tagParam) || "all";
 
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["notes", currentTag],
-    queryFn: () => fetchNotes(currentTag),
-    // Це змусить React Query ігнорувати старі помилки з'єднання
-    retry: false,
+    queryKey: ["notes", category],
+    queryFn: () => fetchNotes("", 1, 10, category),
   });
 
-  if (isLoading) return <div className="p-10">Завантаження нотаток...</div>;
+  if (isLoading) return <div className="p-10 text-center">Завантаження...</div>;
 
-  if (isError) {
+  if (isError)
     return (
-      <div className="p-10 text-red-500">
-        Помилка: {(error as Error).message}
+      <div className="p-10 text-center text-red-500">
+        Бекенд не відповідає. Перевірте, чи запущено сервер на порту 3001.
+        <br />
+        {error instanceof Error ? error.message : ""}
       </div>
     );
-  }
 
-  // Перевірка: що саме прийшло?
   const notes = data?.items || [];
 
   return (
     <div className="p-5">
-      <h1 className="text-xl font-bold mb-4">Категорія: {currentTag}</h1>
+      <h1 className="text-2xl font-bold mb-6">Категорія: {category}</h1>
       {notes.length > 0 ? (
         <NoteList notes={notes} />
       ) : (
-        <div className="border-2 border-dashed p-10 text-center text-gray-400">
-          Тут поки порожньо. Спробуй змінити фільтр або додати нотатку.
+        <div className="p-10 border-2 border-dashed text-center text-gray-400 rounded-lg">
+          Тут поки порожньо для категорії {category}.
         </div>
       )}
     </div>
