@@ -2,6 +2,7 @@ import axios from "axios";
 import { Note, CreateNoteDto, NotesResponse } from "@/types/note";
 
 const api = axios.create({
+  // Твій URL MockAPI
   baseURL: "https://69e60c73ce4e908a155edec4.mockapi.io/api/v1",
   headers: {
     "Content-Type": "application/json",
@@ -12,30 +13,40 @@ const api = axios.create({
 export const fetchNotes = async (
   search: string = "",
   page: number = 1,
-  perPage: number = 6,
+  limit: number = 6,
   category: string = "all",
 ): Promise<NotesResponse> => {
-  // Використовуємо тип Record замість any для ESLint
+  // MockAPI використовує 'page' та 'limit'.
+  // Якщо першої нотатки немає, можливо, MockAPI очікує старт з 1 (ми це вказали).
   const params: Record<string, string | number | undefined> = {
-    page,
-    limit: perPage,
+    page: page,
+    limit: limit,
     search: search || undefined,
   };
 
-  if (category && category !== "all") params.category = category;
+  // Фільтрація по категорії
+  if (category && category !== "all") {
+    params.category = category;
+  }
 
-  const { data, headers } = await api.get<Note[]>("/notes", { params });
+  try {
+    const { data, headers } = await api.get<Note[]>("/notes", { params });
 
-  // Розрахунок сторінок
-  const totalCount = parseInt(headers["x-total-count"] || "50", 10);
-  const totalPages = Math.ceil(totalCount / perPage) || 1;
+    // MockAPI часто не повертає x-total-count.
+    // Якщо заголовок порожній, ставимо дефолтне значення або довжину масиву.
+    const totalCount = parseInt(headers["x-total-count"] || "50", 10);
+    const totalPages = Math.ceil(totalCount / limit) || 1;
 
-  return {
-    notes: data, // Для Notes.client.tsx
-    items: data, // Для FilteredNotesPage та інших
-    totalPages: totalPages,
-    total: totalCount,
-  };
+    return {
+      notes: data,
+      items: data,
+      totalPages: totalPages,
+      total: totalCount,
+    };
+  } catch (error) {
+    console.error("API Error:", error);
+    throw error;
+  }
 };
 
 export const fetchNoteById = async (id: string): Promise<Note> => {
@@ -43,7 +54,6 @@ export const fetchNoteById = async (id: string): Promise<Note> => {
   return data;
 };
 
-// Цей експорт виправить помилку в NoteList.tsx (скріншот 2CA6)
 export const deleteNote = async (id: string): Promise<void> => {
   await api.delete(`/notes/${id}`);
 };
