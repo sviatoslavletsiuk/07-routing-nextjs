@@ -1,5 +1,5 @@
 import React from "react";
-import Link from "next/link"; // Обов'язково додаємо цей імпорт
+import Link from "next/link";
 
 export default function SidebarDefault() {
   return (
@@ -7,16 +7,22 @@ export default function SidebarDefault() {
       <h3>Фільтри</h3>
       <ul style={{ listStyle: "none", padding: 0 }}>
         <li>
-          <Link href="/notes/filter/Work">Work</Link>
+          <Link href="/notes/filter/all">Усі нотатки</Link>
         </li>
         <li>
-          <Link href="/notes/filter/Personal">Personal</Link>
+          <Link href="/notes/filter/Work">Робота</Link>
         </li>
         <li>
-          <Link href="/notes/filter/Todo">Todo</Link>
+          <Link href="/notes/filter/Personal">Особисте</Link>
         </li>
         <li>
-          <Link href="/notes/filter">Усі нотатки</Link>
+          <Link href="/notes/filter/Todo">Завдання</Link>
+        </li>
+        <li>
+          <Link href="/notes/filter/Meeting">Зустрічі</Link>
+        </li>
+        <li>
+          <Link href="/notes/filter/Shopping">Покупки</Link>
         </li>
       </ul>
     </nav>

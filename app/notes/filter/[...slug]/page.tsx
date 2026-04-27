@@ -1,22 +1,32 @@
-"use client";
-
+import {
+  dehydrate,
+  HydrationBoundary,
+  QueryClient,
+} from "@tanstack/react-query";
+import { fetchNotes } from "@/lib/api";
 import NotesClient from "./Notes.client";
-import { useParams } from "next/navigation";
 
-export default function FilteredNotesPage() {
-  const params = useParams();
-  const slugParam = params?.slug;
+interface PageProps {
+  params: Promise<{ slug: string[] }>;
+}
 
-  // Отримуємо категорію з URL
-  const category =
-    (Array.isArray(slugParam) ? slugParam[0] : slugParam) || "all";
+export default async function FilteredNotesPage({ params }: PageProps) {
+  const resolvedParams = await params;
+  const tag = resolvedParams.slug?.[0] || "all";
+
+  const queryClient = new QueryClient();
+
+  await queryClient.prefetchQuery({
+    queryKey: ["notes", "", 1, tag],
+    queryFn: () => fetchNotes("", 1, 6, tag),
+  });
 
   return (
-    <div className="p-5">
-      <h1 className="text-2xl font-bold mb-6 capitalize">
-        Категорія: {category}
-      </h1>
-      <NotesClient category={category} />
-    </div>
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <div className="p-5">
+        <h1 className="text-2xl font-bold mb-6 capitalize">Категорія: {tag}</h1>
+        <NotesClient tag={tag} />
+      </div>
+    </HydrationBoundary>
   );
 }

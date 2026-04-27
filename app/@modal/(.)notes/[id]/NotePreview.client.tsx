@@ -5,17 +5,18 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchNoteById } from "@/lib/api";
 import Modal from "@/components/Modal/Modal";
 import css from "@/app/notes/[id]/NoteDetails.module.css";
+import { Note } from "@/types/note";
 
 export default function NotePreviewClient() {
   const router = useRouter();
-  const params = useParams();
+  const params = useParams<{ id: string }>();
   const id = params?.id;
 
   const {
     data: note,
     isLoading,
     isError,
-  } = useQuery({
+  } = useQuery<Note>({
     queryKey: ["note", id],
     queryFn: () => fetchNoteById(id as string),
     enabled: !!id,
@@ -55,7 +56,7 @@ export default function NotePreviewClient() {
           <p>{note.content}</p>
         </div>
         <footer className={css.meta}>
-          <small>Оновлено: {new Date(note.updatedAt).toLocaleString()}</small>
+          <small>Створено: {new Date(note.createdAt).toLocaleString()}</small>
         </footer>
       </article>
     </Modal>
