@@ -80,8 +80,8 @@ export default function NotesClient({ tag }: NotesClientProps) {
       {totalPages > 1 && (
         <div className="mt-8 flex justify-center">
           <Pagination
-            currentPage={page}
-            totalPages={totalPages}
+            pageCount={totalPages}
+            forcePage={page}
             onPageChange={handlePageChange}
           />
         </div>
@@ -89,7 +89,7 @@ export default function NotesClient({ tag }: NotesClientProps) {
 
       {isModalOpen && (
         <Modal onClose={handleModalClose}>
-          <NoteForm onClose={handleModalClose} />
+          <NoteForm onCancel={handleModalClose} />
         </Modal>
       )}
     </div>
