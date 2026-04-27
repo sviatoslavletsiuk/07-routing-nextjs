@@ -18,29 +18,37 @@ export const fetchNotes = async (
 ): Promise<NotesResponse> => {
   // MockAPI використовує 'page' та 'limit'.
   // Якщо першої нотатки немає, можливо, MockAPI очікує старт з 1 (ми це вказали).
+  const isFiltering = tag !== "all" || Boolean(search);
+  const apiLimit = isFiltering ? 1000 : perPage;
+  const apiPage = isFiltering ? 1 : page;
+
   const params: Record<string, string | number | undefined> = {
-    page: page,
-    limit: perPage,
-    perPage: perPage,
-    search: search || undefined,
+    page: apiPage,
+    limit: apiLimit,
   };
 
-  // Фільтрація по тегу/категорії
-  if (tag && tag !== "all") {
-    params.tag = tag;
-    params.category = tag;
-  }
-
   try {
-    const { data, headers } = await api.get<Note[]>("/notes", { params });
+    const { data } = await api.get<Note[]>("/notes", { params });
 
-    // MockAPI часто не повертає x-total-count.
-    // Якщо заголовок порожній, ставимо дефолтне значення або довжину масиву.
-    const totalCount = parseInt(headers["x-total-count"] || "50", 10);
+    const filteredNotes = data.filter((note) => {
+      const matchesTag =
+        tag === "all" || note.tag === tag || note.category === tag;
+      const lowerSearch = search.toLowerCase();
+      const matchesSearch =
+        !search ||
+        note.title.toLowerCase().includes(lowerSearch) ||
+        note.content.toLowerCase().includes(lowerSearch) ||
+        note.tag?.toLowerCase().includes(lowerSearch) ||
+        note.category.toLowerCase().includes(lowerSearch);
+      return matchesTag && matchesSearch;
+    });
+
+    const totalCount = filteredNotes.length;
     const totalPages = Math.ceil(totalCount / perPage) || 1;
+    const notes = filteredNotes.slice((page - 1) * perPage, page * perPage);
 
     return {
-      notes: data,
+      notes,
       totalPages: totalPages,
       total: totalCount,
     };

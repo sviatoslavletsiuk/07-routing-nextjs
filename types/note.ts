@@ -18,7 +18,6 @@ export interface CreateNoteDto {
 
 export interface NotesResponse {
   notes: Note[];
-  items: Note[];
   totalPages: number;
   total: number;
 }
