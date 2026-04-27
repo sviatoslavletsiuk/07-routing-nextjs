@@ -2,20 +2,16 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { fetchNotes } from "@/lib/api";
-import NoteList from "@/components/NoteList/NoteList";
-import { useParams } from "next/navigation";
 import { Note } from "@/types/note";
+import NoteList from "@/components/NoteList/NoteList";
 
-export default function FilteredNotesPage() {
-  const params = useParams();
-  const tagParam = params?.tag;
+interface NotesClientProps {
+  category: string;
+}
 
-  // Отримуємо категорію з URL
-  const category = (Array.isArray(tagParam) ? tagParam[0] : tagParam) || "all";
-
+export default function NotesClient({ category }: NotesClientProps) {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["notes", category],
-    // Передаємо всі 4 аргументи
     queryFn: () => fetchNotes("", 1, 10, category),
   });
 
@@ -37,10 +33,7 @@ export default function FilteredNotesPage() {
   const notes = data?.items || [];
 
   return (
-    <div className="p-5">
-      <h1 className="text-2xl font-bold mb-6 capitalize">
-        Категорія: {category}
-      </h1>
+    <div>
       {notes.length > 0 ? (
         <NoteList notes={notes as Note[]} />
       ) : (
