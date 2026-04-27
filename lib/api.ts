@@ -21,12 +21,14 @@ export const fetchNotes = async (
   const params: Record<string, string | number | undefined> = {
     page: page,
     limit: perPage,
+    perPage: perPage,
     search: search || undefined,
   };
 
-  // Фільтрація по тегу
+  // Фільтрація по тегу/категорії
   if (tag && tag !== "all") {
     params.tag = tag;
+    params.category = tag;
   }
 
   try {
