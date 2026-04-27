@@ -9,7 +9,7 @@ import SearchBox from "@/components/SearchBox/SearchBox";
 import Pagination from "@/components/Pagination/Pagination";
 import Modal from "@/components/Modal/Modal";
 import NoteForm from "@/components/NoteForm/NoteForm";
-import { useDebounce } from "lodash.debounce";
+import { useDebounce } from "use-debounce";
 
 interface NotesClientProps {
   tag: string;
@@ -20,7 +20,7 @@ export default function NotesClient({ tag }: NotesClientProps) {
   const [page, setPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const debouncedSearch = useDebounce(search, 300);
+  const [debouncedSearch] = useDebounce(search, 300);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["notes", debouncedSearch, page, tag],
